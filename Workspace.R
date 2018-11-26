@@ -17,13 +17,28 @@ top10_genre <- songs %>%
 ggplot(top10_genre, aes(x = broad_genre)) + 
   geom_bar()
 
-          # NOT Top 10
+    # NOT Top 10
 not_top10 <- songs %>%
   filter(peak_pos > "10")
 
 ggplot(not_top10, aes(x = broad_genre)) + 
   geom_bar()
 
+# Pre and Post Spotify/ other music sites
+
+# Song titles
+
+# Types of music
+
+# Duration
+
+# Types of equations (for example, words per second)
+
+# happy/sad setiment analysis
+
+# word analysis in general (reoccuring words? avg # of words?)
+
+# artists types
 
 
 
