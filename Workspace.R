@@ -12,7 +12,7 @@ ggplot(genre_peak, aes(x = broad_genre, y = peak_pos)) +
 
 # Plot 2: Compare Top 10 Songs vs. Genre
 top10_genre <- songs %>%
-  filter(peak_pos <= "10") 
+  filter(peak_pos == "1") 
 
 ggplot(top10_genre, aes(x = broad_genre)) + 
   geom_bar()

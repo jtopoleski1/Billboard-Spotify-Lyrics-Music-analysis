@@ -1,0 +1,130 @@
+---
+title: 'Bop to the Top: #1 on the Billboard Charts'
+author: "Jordan Topoleski"
+date: "11/26/2018"
+output: html_document
+---
+
+```{r , include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gganimate)
+library(tidytext)
+library(wordcloud)
+library(tm)
+library(SnowballC)
+library(RColorBrewer)
+library(RCurl)
+library(XML)
+library(tidyverse)
+
+songs <- read_csv("songs.csv")
+```
+
+## Number of Songs on the Top Charts per Year
+
+```{r, echo = FALSE}
+num <- songs %>%
+  count(year)
+
+ggplot(num, aes(x = year, y = n)) + 
+  geom_line() +
+  labs(title = "Number of Songs on the Billboard Top Charts",
+       subtitle = "Per Year: 2000-2017",
+       x = "Year",
+       y = "Number of Songs") +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  geom_vline(xintercept=2006, colour="grey") +
+  geom_text(aes(x=2006, label="Spotify Created (2006)\n", y=525), colour="blue", angle=90) +
+  geom_vline(xintercept=2015, colour="grey") +
+  geom_text(aes(x=2015, label="Apple Music Created (2015)\n", y=525), colour="red", angle=90)
+```
+
+## Genre: #1 vs. the Rest (make other combos in shiny app maybe?)
+
+```{r}
+# Plot 1: Compare Genre vs. Peak Position
+genre_peak <- songs %>%
+  filter(broad_genre != "unknown")
+
+median <- genre_peak %>%
+  group_by(broad_genre) %>%
+    mutate(med = median(peak_pos))
+
+ggplot(genre_peak, aes(x = broad_genre, y = peak_pos)) + 
+  geom_boxplot() +
+  geom_text(data = median, aes(x = broad_genre, y = med, label = med), 
+              size = 3, vjust = -1.5) +
+  labs(title = "Peak Billboard Hot 100 Position",
+       subtitle = "Based Upon Genre: 2000-2017",
+       x = "Genre",
+       y = "Peak Position") +
+  # How to get the y-axis to say 1 at top and NOT 0???
+  scale_y_reverse() +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(plot.subtitle = element_text(hjust = 0.5))
+
+
+
+# Plot 2: Compare Top 1 Songs vs. Genre
+    # Once in Shiny, allow user to select YEAR as 
+    # well as Top 1 vs 2-100 (peak_pos) vs others in a dropdown menu
+
+ggplot(songs, aes(x = broad_genre)) + 
+  geom_bar() +
+  labs(title = "Songs Appearing in the Billboard Hot 100",
+       subtitle = "Based Upon Genre: 2000-2017",
+       x = "Genre",
+       y = "Number of Appearances") +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(plot.subtitle = element_text(hjust = 0.5))
+```
+
+## Song Titles (length changes AND sentiment analysis?)
+
+```{r}
+# Song Title Length Analysis
+      # In shiny, make this so user can pick ALL songs, #1 songs or non-#1 songs
+      # Also, make this hoverable for the data points
+title_length <- songs %>%
+  # filter(peak_pos != "1") %>%
+  group_by(year) %>%
+  mutate(tlength = nchar(title))
+
+avg_title_length <- title_length %>%
+  group_by(year) %>%
+  mutate(avgtlength = mean(tlength))
+
+ggplot(avg_title_length, aes(x = year, y = avgtlength)) + 
+  geom_line() + 
+  geom_point() +
+  labs(title = "Billboard Hot 100 Song Length",
+       subtitle = "By Year: 2000-2017",
+       x = "Year",
+       y = "Average Title Length (Characters)") +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(plot.subtitle = element_text(hjust = 0.5))
+
+# Sentiment Analysis
+  # Do this for EVERY year and combine into a table / graph it
+songs17 <- songs %>%
+  filter(year == "2017")
+
+tokens <- data_frame(text= songs17$lyrics) %>%
+  unnest_tokens(word, text)
+
+lyric_set <- tokens %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(sentiment) %>%
+  spread(sentiment, n) %>%
+  mutate(positivity = positive - negative)
+
+# Make a word cloud (STILL TO DO)
+word_count <- data_frame(text= songs$lyrics) %>%
+  unnest_tokens(word, text) %>%
+  count(word) %>%
+  filter(n > 1000)
+```
+
+
+
