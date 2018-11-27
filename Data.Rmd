@@ -8,6 +8,9 @@ output: html_document
 ```{r , include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(gganimate)
+library(animation)
+library(dplyr)
+library(ggplot2)
 library(tidytext)
 library(wordcloud)
 library(tm)
@@ -26,6 +29,8 @@ songs <- read_csv("songs.csv")
 num <- songs %>%
   count(year)
 
+
+# Potentially animate??
 ggplot(num, aes(x = year, y = n)) + 
   geom_line() +
   labs(title = "Number of Songs on the Billboard Top Charts",
@@ -150,7 +155,18 @@ ggplot(avg_duration, aes(x = year, y = avgtime)) +
        y = "Average Song Length (Minutes)") +
   theme(plot.title = element_text(hjust = 0.5)) + 
   theme(plot.subtitle = element_text(hjust = 0.5))
+
+# Tempo comparison (words)
+tempo <- songs
 ```
+
+# Components of a Song
+
+```{r}
+# Shiny app with a selector of all the various components:
+# energy, liveness, tempo, speechiness, acousticness, danceability
+```
+
 
 
 
