@@ -8,7 +8,6 @@ output: html_document
 ```{r , include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(gganimate)
-library(animation)
 library(dplyr)
 library(ggplot2)
 library(tidytext)
@@ -101,9 +100,8 @@ avg_title_length <- title_length %>%
   mutate(avgtlength = mean(tlength))
 
 ggplot(avg_title_length, aes(x = year, y = avgtlength)) + 
-  geom_line() + 
-  geom_point() +
-  labs(title = "Billboard Hot 100 Song Length",
+  geom_smooth() +
+  labs(title = "Billboard Hot 100 Song Title Length",
        subtitle = "By Year: 2000-2017",
        x = "Year",
        y = "Average Title Length (Characters)") +
@@ -147,8 +145,7 @@ avg_duration <- duration %>%
   mutate(avgtime = avgtime/60000)
 
 ggplot(avg_duration, aes(x = year, y = avgtime)) + 
-  geom_line() +
-  geom_point() +
+  geom_smooth() +
   labs(title = "Billboard Hot 100 Song Duration",
        subtitle = "By Year: 2000-2017",
        x = "Year",
