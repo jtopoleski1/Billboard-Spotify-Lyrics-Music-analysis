@@ -22,7 +22,7 @@ songs <- read_rds("songs.rds")
 ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"), 
                  theme = shinytheme("lumen"),
        
-       tabPanel("How-To Guide",
+       tabPanel("Overview",
                 fluidRow(
                   column(12,
                          wellPanel(
@@ -86,10 +86,8 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                                    "Top 25" = "top25",
                                    "26-100" = "bot75")),
                     htmlOutput("title_stats"),
-                    helpText("Over time, song titles within the Top 100 have been getting significantly shorter."),
-                    # Change to explain more
-                    # Should I include summary stats?
-                    helpText("Step 2 of 'How to Make a Top Hit Song': a shorter title is the way to go.")
+                    helpText("Over time, song titles within the Top 100 have generally been getting shorter. While this does seem true in more recent years for the top #1 songs, there has been lots of flucuation within the past 17 years. As such, this is not a great explanatory value to consider"),
+                    helpText("Step 2 of 'How to Make a Top Hit Song': a shorter title (12-13 characters) may be the way to go, but there isn't much statistical significance.")
                   ),
                   
                   mainPanel(
@@ -107,10 +105,8 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                                    "Top 25" = "top25",
                                    "26-100" = "bot75")),
                     htmlOutput("duration_stats"),
-                    helpText("Over time, song duration within the Top 100 have been getting significantly shorter."),
-                    # Change to explain more
-                    # Include summary stats?
-                    helpText("Step 3 of 'How to Make a Top Hit Song': a shorter song is the way to go.")
+                    helpText("Over time, song lengths within the Top 100 have been getting significantly shorter. This relationship comes with strong statistical significance."),
+                    helpText("Step 3 of 'How to Make a Top Hit Song': a shorter song (about 3:30-4 minutes) seems like the way to go.")
                   ),
                   
                   mainPanel(
@@ -135,7 +131,11 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                                 options = list(`actions-box` = TRUE),
                                 multiple = TRUE),
                     htmlOutput("music_stats"),
-                  helpText("Descrip Here")
+                  helpText("Energy: represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. A value of 0.0 is least energetic and 1.0 is most energetic"),
+                  helpText("Liveness: describes the probability that the song was recorded with a live audience. A value above 0.8 provides strong likelihood that the track is live."),
+                  helpText("Tempo: describes the speed/rate the song is played, measure in beats per minute"),
+                  helpText("Speechiness: detects the presence of spoken words in a track. If above 0.66, it is probably made of spoken words, a score between 0.33 and 0.66 is a song that may contain both music and words, and a score below 0.33 means the song does not have any speech."),
+                  helpText("Danceability: describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.0 is least danceable and 1.0 is most danceable.")
                 ),
                 mainPanel(
                   plotOutput("plot5.1"),
@@ -151,11 +151,13 @@ server <- function(input, output) {
     HTML(paste(
       h3("Summary"),
       p("What makes a hit song?"),
-      p("Over the past 20 years, the Billboard Hot 100 has kept data on the popularity of songs."),
+      p("Over the past 20 years, the Billboard Hot 100 has kept data on the popularity of songs, with numerous data categorizations."),
       p("Let's explore!"),
+      p("*It is important to keep in mind that the following data are 
+        showing correlative relationships, not causative ones. This site is attempting to shed light on what is (and isn't) important, NOT a causal relationship."),
       h3("Source"),
-      a("Michael Tauberg: Billboard Hot 100", href = "https://github.com/taubergm/Billboard-Spotify-Lyrics-Music-analysis"
-    )))
+      a("Michael Tauberg: Billboard Hot 100", href = "https://github.com/taubergm/Billboard-Spotify-Lyrics-Music-analysis")
+      ))
   })
   
   
@@ -735,7 +737,7 @@ server <- function(input, output) {
                 scale_y_reverse() +
                 labs(title = "Tempo Analysis",
                      subtitle = "Based Upon Top Position",
-                     x = "Tempo",
+                     x = "Tempo (bpm)",
                      y = "Song's Top Position") +
                 theme(plot.title = element_text(hjust = 0.5))
             } else if(input$analysis == "speechiness"){
@@ -829,7 +831,7 @@ server <- function(input, output) {
                 scale_colour_manual(name="Song's Top Position",values=c('1' = "#0000CC",
                                                                         '2-100' = "#CC0000")) +
                 labs(subtitle = "Density Comparison: Top 1 vs. Rest",
-                     x = "Tempo",
+                     x = "Tempo (bpm)",
                      y = "Density")
             } else if(input$analysis == "speechiness"){
               ggplot(songs_filtered1) +
