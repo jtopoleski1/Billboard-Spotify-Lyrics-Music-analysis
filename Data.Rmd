@@ -20,6 +20,7 @@ library(XML)
 library(tidyverse)
 
 songs <- read_csv("songs.csv")
+saveRDS(songs, file = "songs.rds")
 ```
 
 ## Number of Songs on the Top Charts per Year
@@ -74,7 +75,15 @@ ggplot(genre_peak, aes(x = broad_genre, y = peak_pos)) +
     # Once in Shiny, allow user to select YEAR as 
     # well as Top 1 vs 2-100 (peak_pos) vs others in a dropdown menu
 
-ggplot(songs, aes(x = broad_genre)) + 
+top_1_new <- songs %>%
+        filter(peak_pos == 1) %>%
+        filter(broad_genre != "unknown")
+      
+      top_10_new <- songs %>%
+        filter(peak_pos <= 10) %>%
+        filter(broad_genre != "unknown")
+
+ggplot(top_1_new, aes(x = broad_genre)) + 
   geom_bar() +
   labs(title = "Songs Appearing in the Billboard Hot 100",
        subtitle = "Based Upon Genre: 2000-2017",
@@ -164,6 +173,52 @@ tempo <- songs
 # energy, liveness, tempo, speechiness, acousticness, danceability
 ```
 
+pickerInput("year",
+                                "Year:",
+                                choices = unique(songs$year),
+                                selected = unique(songs$year),
+                                options = list(`actions-box` = TRUE), 
+                                multiple = TRUE)
+
+year <- reactive({
+        req(input$year)
+        if(input$year == "2017"){
+          year <- "2017"
+        } else if(input$year == "2016"){
+          year <- "2016"
+        } else if(input$year == "2015"){
+          year <- "2015"
+        } else if(input$year == "2014"){
+          year <- "2014"
+        } else if(input$year == "2013"){
+          year <- "2013"
+        } else if(input$year == "2012"){
+          year <- "2012"
+        } else if(input$year == "2011"){
+          year <- "2011"
+        } else if(input$year == "2010"){
+          year <- "2010"
+        } else if(input$year == "2009"){
+          year <- "2009"
+        } else if(input$year == "2008"){
+          year <- "2008"
+        } else if(input$year == "2007"){
+          year <- "2007"
+        } else if(input$year == "2006"){
+          year <- "2006"
+        } else if(input$year == "2005"){
+          year <- "2005"
+        } else if(input$year == "2004"){
+          year <- "2004"
+        } else if(input$year == "2003"){
+          year <- "2003"
+        } else if(input$year == "2002"){
+          year <- "2002"
+        } else if(input$year == "2001"){
+          year <- "2001"
+        } else if(input$year == "2000"){
+          year <- "2000"
+        }})
 
 
 
