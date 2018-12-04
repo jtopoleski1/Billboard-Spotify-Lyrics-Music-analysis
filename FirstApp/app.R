@@ -21,7 +21,7 @@ songs <- read_rds("songs.rds")
 ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"), 
                  theme = shinytheme("lumen"),
               
-       tabPanel("# of Songs on List",
+       tabPanel("Changing Music Industry",
                 sidebarLayout(
                   sidebarPanel(
                     radioButtons("type", 
@@ -31,7 +31,8 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                                   "Top 10" = "top10",
                                   "Top 25" = "top25",
                                   "26-100" = "bot75")),
-                    helpText("The emergence of new music sharing technology has led to a rapid increase in the distibution of music. As shown in all of the Billboard Hot 100 songs, there have been more and more songs appearing on the chart.")
+                    helpText("To better understand the Billboard Top 100, let's first explore the rapidly changing music industry."),
+                    helpText("The emergence of new music sharing technology has led to a rapid increase in the distibution of music. As shown to the right, there have been more and more songs appearing on the chart. This is likely to to the proliferation of music sharing services that have given many more listeners access to a wider, more diverse array of music.")
         
                    ),
                   
@@ -44,25 +45,45 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                 sidebarLayout(
                   sidebarPanel(
                     radioButtons("type2", 
-                                 "Song's Highest Rating:",
+                                 "Song's Highest Rating (for the top graph):",
                                  c("View All" = "all100",
                                    "Top 1" = "top1",
                                    "Top 10" = "top10",
                                    "Top 25" = "top25",
                                    "26-100" = "bot75")),
                     pickerInput("year",
-                                "Year:",
+                                "Year (for the bottom graph):",
                                 choices = unique(songs$year),
                                 selected = unique(songs$year),
                                 options = list(`actions-box` = TRUE),
                                 multiple = TRUE),
-                    helpText("HERE.")
+                    helpText("The top graph establishes the dominance of the pop, r&b, and rap genres (all appearing the most in the top 1, top 10, and top 25). Although the 'View All' selection makes it appear country is also very popular, these songs seem to litter the bottom 26-100 spots."),
+                    helpText("The bottom graph further iterates this point through displaying the higher median spot on the Top 100 list for r&b songs."),
+                    helpText("Step 1 of 'How to Make a Top Hit Song': r&b, pop, and rap are the way to go.")
                   ),
                   
                   mainPanel(
                     plotOutput("plot2.1"),
                     plotOutput("plot2.2")
-                  ))))
+                  ))),
+       tabPanel("Title Length",
+                sidebarLayout(
+                  sidebarPanel(
+                    radioButtons(radioButtons("type3", 
+                                              "Song's Highest Rating:",
+                                              c("View All" = "all100",
+                                                "Top 1" = "top1",
+                                                "Top 10" = "top10",
+                                                "Top 25" = "top25",
+                                                "26-100" = "bot75"))),
+                    helpText("Over time, song titles within the Top 100 have been getting significantly shorter."),
+                    helpText("Step 1 of 'How to Make a Top Hit Song': a shorter title is the way to go.")
+                  ),
+                  
+                  mainPanel(
+                    plotOutput("plot3")
+                  )
+                )))
 
 server <- function(input, output) {
 
@@ -170,47 +191,9 @@ server <- function(input, output) {
             ylim(175, 500)
           }
       })
-        
-        
-        # year2 <- reactive({
-        #   req(input$year)
-        #   if(input$year == "2017"){
-        #     songs %>% filter(year == 2017)
-        #   } else if(input$year == "2016"){
-        #     songs %>% filter(year == 2016)
-        #   } else if(input$year == "2015"){
-        #     songs %>% filter(year == 2015)
-        #   } else if(input$year == "2014"){
-        #     songs %>% filter(year == 2014)
-        #   } else if(input$year == "2013"){
-        #     songs %>% filter(year == 2013)
-        #   } else if(input$year == "2012"){
-        #     songs %>% filter(year == 2012)
-        #   } else if(input$year == "2011"){
-        #     songs %>% filter(year == 2011)
-        #   } else if(input$year == "2010"){
-        #     songs %>% filter(year == 2010)
-        #   } else if(input$year == "2009"){
-        #     songs %>% filter(year == 2009)
-        #   } else if(input$year == "2008"){
-        #     songs %>% filter(year == 2008)
-        #   } else if(input$year == "2007"){
-        #     songs %>% filter(year == 2007)
-        #   } else if(input$year == "2006"){
-        #     songs %>% filter(year == 2006)
-        #   } else if(input$year == "2005"){
-        #     songs %>% filter(year == 2005)
-        #   } else if(input$year == "2004"){
-        #     songs %>% filter(year == 2004)
-        #   } else if(input$year == "2003"){
-        #     songs %>% filter(year == 2003)
-        #   } else if(input$year == "2002"){
-        #     songs %>% filter(year == 2002)
-        #   } else if(input$year == "2001"){
-        #     songs %>% filter(year == 2001)
-        #   } else if(input$year == "2000"){
-        #     songs %>% filter(year == 2000)
-        #   }})
+      
+      
+      # Plot 2
       
       top_1_new <- songs %>%
         filter(peak_pos == 1) %>%
@@ -303,7 +286,91 @@ server <- function(input, output) {
 
             
       }) 
-
+          
+          # Plot 3
+          
+          output$plot3 <- renderPlot({
+           
+             title_length <- songs %>%
+              group_by(year) %>%
+              mutate(tlength = nchar(title))
+            
+            avg_title_length_100 <- title_length %>%
+              group_by(year) %>%
+              mutate(avgtlength = mean(tlength))
+            
+            avg_title_length_1 <- title_length %>%
+              filter(peak_pos == 1) %>%
+              group_by(year) %>%
+              mutate(avgtlength = mean(tlength))
+            
+            avg_title_length_1 <- title_length %>%
+              filter(peak_pos == 1) %>%
+              group_by(year) %>%
+              mutate(avgtlength = mean(tlength))
+            
+            avg_title_length_10 <- title_length %>%
+              filter(peak_pos <= 10) %>%
+              group_by(year) %>%
+              mutate(avgtlength = mean(tlength))
+            
+            avg_title_length_25 <- title_length %>%
+              filter(peak_pos <= 25) %>%
+              group_by(year) %>%
+              mutate(avgtlength = mean(tlength))
+            
+            avg_title_length_75 <- title_length %>%
+              filter(peak_pos >= 26) %>%
+              group_by(year) %>%
+              mutate(avgtlength = mean(tlength))
+            
+            if (input$type3 == "all100"){
+              ggplot(avg_title_length_100, aes(x = year, y = avgtlength)) + 
+                geom_smooth() +
+                labs(title = "Billboard Hot 100 Song Title Length",
+                     subtitle = "By Year: 2000-2017",
+                     x = "Year",
+                     y = "Average Title Length (Characters)") +
+                theme(plot.title = element_text(hjust = 0.5)) + 
+                theme(plot.subtitle = element_text(hjust = 0.5))
+            } else if (input$type3 == "top1"){
+              ggplot(avg_title_length_1, aes(x = year, y = avgtlength)) + 
+                geom_smooth() +
+                labs(title = "Billboard Hot 100 Song Title Length",
+                     subtitle = "By Year: 2000-2017",
+                     x = "Year",
+                     y = "Average Title Length (Characters)") +
+                theme(plot.title = element_text(hjust = 0.5)) + 
+                theme(plot.subtitle = element_text(hjust = 0.5)) 
+            } else if(input$type3 == "top10"){
+              ggplot(avg_title_length_10, aes(x = year, y = avgtlength)) + 
+                geom_smooth() +
+                labs(title = "Billboard Hot 100 Song Title Length",
+                     subtitle = "By Year: 2000-2017",
+                     x = "Year",
+                     y = "Average Title Length (Characters)") +
+                theme(plot.title = element_text(hjust = 0.5)) + 
+                theme(plot.subtitle = element_text(hjust = 0.5))
+            } else if(input$type3 == "top25"){
+              ggplot(avg_title_length_25, aes(x = year, y = avgtlength)) + 
+                geom_smooth() +
+                labs(title = "Billboard Hot 100 Song Title Length",
+                     subtitle = "By Year: 2000-2017",
+                     x = "Year",
+                     y = "Average Title Length (Characters)") +
+                theme(plot.title = element_text(hjust = 0.5)) + 
+                theme(plot.subtitle = element_text(hjust = 0.5))
+            } else if(input$type3 == "bot75"){
+              ggplot(avg_title_length_75, aes(x = year, y = avgtlength)) + 
+                geom_smooth() +
+                labs(title = "Billboard Hot 100 Song Title Length",
+                     subtitle = "By Year: 2000-2017",
+                     x = "Year",
+                     y = "Average Title Length (Characters)") +
+                theme(plot.title = element_text(hjust = 0.5)) + 
+                theme(plot.subtitle = element_text(hjust = 0.5))
+            }
+          })
 }
       
       

@@ -100,7 +100,6 @@ ggplot(top_1_new, aes(x = broad_genre)) +
       # In shiny, make this so user can pick ALL songs, #1 songs or non-#1 songs
       # Also, make this hoverable for the data points
 title_length <- songs %>%
-  # filter(peak_pos != "1") %>%
   group_by(year) %>%
   mutate(tlength = nchar(title))
 
