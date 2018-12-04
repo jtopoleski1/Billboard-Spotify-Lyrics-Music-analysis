@@ -104,6 +104,7 @@ title_length <- songs %>%
   mutate(tlength = nchar(title))
 
 avg_title_length <- title_length %>%
+  filter(peak_pos == 1) %>%
   group_by(year) %>%
   mutate(avgtlength = mean(tlength))
 
@@ -161,8 +162,6 @@ ggplot(avg_duration, aes(x = year, y = avgtime)) +
   theme(plot.title = element_text(hjust = 0.5)) + 
   theme(plot.subtitle = element_text(hjust = 0.5))
 
-# Tempo comparison (words)
-tempo <- songs
 ```
 
 # Components of a Song
@@ -170,6 +169,24 @@ tempo <- songs
 ```{r}
 # Shiny app with a selector of all the various components:
 # energy, liveness, tempo, speechiness, acousticness, danceability
+
+songs16 <-
+  songs %>%
+  filter(year == "2016") %>%
+  filter(peak_pos == "1")
+
+songs$tempo <- as.numeric(songs$tempo)
+songs$liveness <- as.numeric(songs$liveness)
+songs$energy <- as.numeric(songs$energy)
+songs$speechiness <- as.numeric(songs$speechiness)
+songs$danceability <- as.numeric(songs$danceability)
+
+ggplot(songs, aes(x = tempo, y = peak_pos)) + 
+  geom_point() +
+  stat_smooth(method = "lm")
+
+ggplot(songs16, aes(x = energy)) +
+  geom_histogram(binwidth = ".2", stat = "count")
 ```
 
 pickerInput("year",

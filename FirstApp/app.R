@@ -21,12 +21,12 @@ songs <- read_rds("songs.rds")
 ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"), 
                  theme = shinytheme("lumen"),
               
-       tabPanel("Changing Music Industry",
+       tabPanel("The Changing Music Industry",
                 sidebarLayout(
                   sidebarPanel(
                     radioButtons("type", 
                                 "Song's Highest Rating:",
-                                c("View All" = "all100",
+                                choices = c("View All" = "all100",
                                   "Top 1" = "top1",
                                   "Top 10" = "top10",
                                   "Top 25" = "top25",
@@ -69,21 +69,67 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
        tabPanel("Title Length",
                 sidebarLayout(
                   sidebarPanel(
-                    radioButtons(radioButtons("type3", 
-                                              "Song's Highest Rating:",
-                                              c("View All" = "all100",
-                                                "Top 1" = "top1",
-                                                "Top 10" = "top10",
-                                                "Top 25" = "top25",
-                                                "26-100" = "bot75"))),
+                    radioButtons("type3", 
+                                 "Song's Highest Rating:",
+                                 c("View All" = "all100",
+                                   "Top 1" = "top1",
+                                   "Top 10" = "top10",
+                                   "Top 25" = "top25",
+                                   "26-100" = "bot75")),
                     helpText("Over time, song titles within the Top 100 have been getting significantly shorter."),
-                    helpText("Step 1 of 'How to Make a Top Hit Song': a shorter title is the way to go.")
+                    # Change to explain more
+                    # Should I include summary stats?
+                    helpText("Step 2 of 'How to Make a Top Hit Song': a shorter title is the way to go.")
                   ),
                   
                   mainPanel(
                     plotOutput("plot3")
                   )
-                )))
+                )),
+       tabPanel("Duration",
+                sidebarLayout(
+                  sidebarPanel(
+                    radioButtons("type4", 
+                                 "Song's Highest Rating:",
+                                 c("View All" = "all100",
+                                   "Top 1" = "top1",
+                                   "Top 10" = "top10",
+                                   "Top 25" = "top25",
+                                   "26-100" = "bot75")),
+                    helpText("Over time, song duration within the Top 100 have been getting significantly shorter."),
+                    # Change to explain more
+                    # Include summary stats?
+                    helpText("Step 3 of 'How to Make a Top Hit Song': a shorter song is the way to go.")
+                  ),
+                  
+                  mainPanel(
+                    plotOutput("plot4")
+                  )
+                )),
+       tabPanel("Music Analysis",
+                sidebarLayout(
+                  sidebarPanel(
+                    selectInput("analysis", 
+                                "Choose component to analyze:",
+                    choices = c("Danceability" = "danceability",
+                                "Energy" = "energy",
+                                "Liveness" = "liveness",
+                                "Tempo" = "tempo", 
+                                "Speechiness" = "speechiness"),
+                    selected = "danceability"),
+                    pickerInput("year2",
+                                "Year:",
+                                choices = unique(songs$year),
+                                selected = "2017",
+                                options = list(`actions-box` = TRUE),
+                                multiple = TRUE),
+                  helpText("Descrip Here")
+                ),
+                mainPanel(
+                  plotOutput("plot5.1"),
+                  plotOutput("plot5.2")
+                ))))
+                
 
 server <- function(input, output) {
 
@@ -290,8 +336,8 @@ server <- function(input, output) {
           # Plot 3
           
           output$plot3 <- renderPlot({
-           
-             title_length <- songs %>%
+            
+            title_length <- songs %>%
               group_by(year) %>%
               mutate(tlength = nchar(title))
             
@@ -326,7 +372,8 @@ server <- function(input, output) {
             
             if (input$type3 == "all100"){
               ggplot(avg_title_length_100, aes(x = year, y = avgtlength)) + 
-                geom_smooth() +
+                geom_smooth(size = 0.4, linetype="dotted", se = FALSE) +
+                geom_smooth(method = lm, se=FALSE) +
                 labs(title = "Billboard Hot 100 Song Title Length",
                      subtitle = "By Year: 2000-2017",
                      x = "Year",
@@ -335,7 +382,8 @@ server <- function(input, output) {
                 theme(plot.subtitle = element_text(hjust = 0.5))
             } else if (input$type3 == "top1"){
               ggplot(avg_title_length_1, aes(x = year, y = avgtlength)) + 
-                geom_smooth() +
+                geom_smooth(size = 0.4, linetype="dotted", se = FALSE) +
+                geom_smooth(method = lm, se=FALSE) +
                 labs(title = "Billboard Hot 100 Song Title Length",
                      subtitle = "By Year: 2000-2017",
                      x = "Year",
@@ -344,7 +392,8 @@ server <- function(input, output) {
                 theme(plot.subtitle = element_text(hjust = 0.5)) 
             } else if(input$type3 == "top10"){
               ggplot(avg_title_length_10, aes(x = year, y = avgtlength)) + 
-                geom_smooth() +
+                geom_smooth(size = 0.4, linetype="dotted", se = FALSE) +
+                geom_smooth(method = lm, se=FALSE) +
                 labs(title = "Billboard Hot 100 Song Title Length",
                      subtitle = "By Year: 2000-2017",
                      x = "Year",
@@ -353,7 +402,8 @@ server <- function(input, output) {
                 theme(plot.subtitle = element_text(hjust = 0.5))
             } else if(input$type3 == "top25"){
               ggplot(avg_title_length_25, aes(x = year, y = avgtlength)) + 
-                geom_smooth() +
+                geom_smooth(size = 0.4, linetype="dotted", se = FALSE) +
+                geom_smooth(method = lm, se=FALSE) +
                 labs(title = "Billboard Hot 100 Song Title Length",
                      subtitle = "By Year: 2000-2017",
                      x = "Year",
@@ -362,7 +412,8 @@ server <- function(input, output) {
                 theme(plot.subtitle = element_text(hjust = 0.5))
             } else if(input$type3 == "bot75"){
               ggplot(avg_title_length_75, aes(x = year, y = avgtlength)) + 
-                geom_smooth() +
+                geom_smooth(size = 0.4, linetype="dotted", se = FALSE) +
+                geom_smooth(method = lm, se=FALSE) +
                 labs(title = "Billboard Hot 100 Song Title Length",
                      subtitle = "By Year: 2000-2017",
                      x = "Year",
@@ -371,6 +422,182 @@ server <- function(input, output) {
                 theme(plot.subtitle = element_text(hjust = 0.5))
             }
           })
+          
+          # Plot 4
+          
+          output$plot4 <- renderPlot({
+            
+            duration <- songs %>%
+              mutate(duration = as.integer(duration_ms)) %>%
+              filter(duration != "NA")
+            
+            avg_duration_100 <- duration %>%
+              group_by(year) %>%
+              mutate(avgtime = mean(duration)) %>%
+              mutate(avgtime = avgtime/60000)
+              
+              avg_duration_1 <- duration %>%
+                filter(peak_pos == 1) %>%
+                group_by(year) %>%
+                mutate(avgtime = mean(duration)) %>%
+                mutate(avgtime = avgtime/60000)
+              
+              avg_duration_10 <- duration %>%
+                filter(peak_pos <= 10) %>%
+                group_by(year) %>%
+                mutate(avgtime = mean(duration)) %>%
+                mutate(avgtime = avgtime/60000)
+              
+              avg_duration_25 <- duration %>%
+                filter(peak_pos <= 25) %>%
+                group_by(year) %>%
+                mutate(avgtime = mean(duration)) %>%
+                mutate(avgtime = avgtime/60000)
+              
+              avg_duration_75 <- duration %>%
+                filter(peak_pos >= 25) %>%
+                group_by(year) %>%
+                mutate(avgtime = mean(duration)) %>%
+                mutate(avgtime = avgtime/60000)
+              
+              if (input$type4 == "all100"){
+                ggplot(avg_duration_100, aes(x = year, y = avgtime)) + 
+                  geom_smooth(size = 0.4, linetype="dotted", se = FALSE) +
+                  geom_smooth(method = lm, se=FALSE) +
+                  labs(title = "Billboard Hot 100 Song Duration",
+                       subtitle = "By Year: 2000-2017",
+                       x = "Year",
+                       y = "Average Song Length (Minutes)") +
+                  theme(plot.title = element_text(hjust = 0.5)) + 
+                  theme(plot.subtitle = element_text(hjust = 0.5))
+              } else if (input$type4 == "top1"){
+                ggplot(avg_duration_1, aes(x = year, y = avgtime)) + 
+                  geom_smooth(size = 0.4, linetype="dotted", se = FALSE) +
+                  geom_smooth(method = lm, se=FALSE) +
+                  labs(title = "Billboard Hot 100 Song Duration",
+                       subtitle = "By Year: 2000-2017",
+                       x = "Year",
+                       y = "Average Song Length (Minutes)") +
+                  theme(plot.title = element_text(hjust = 0.5)) + 
+                  theme(plot.subtitle = element_text(hjust = 0.5))
+              } else if(input$type4 == "top10"){
+                ggplot(avg_duration_10, aes(x = year, y = avgtime)) + 
+                  geom_smooth(size = 0.4, linetype="dotted", se = FALSE) +
+                  geom_smooth(method = lm, se=FALSE) +
+                  labs(title = "Billboard Hot 100 Song Duration",
+                       subtitle = "By Year: 2000-2017",
+                       x = "Year",
+                       y = "Average Song Length (Minutes)") +
+                  theme(plot.title = element_text(hjust = 0.5)) + 
+                  theme(plot.subtitle = element_text(hjust = 0.5))
+              } else if(input$type4 == "top25"){
+                ggplot(avg_duration_25, aes(x = year, y = avgtime)) + 
+                  geom_smooth(size = 0.4, linetype="dotted", se = FALSE) +
+                  geom_smooth(method = lm, se=FALSE) +
+                  labs(title = "Billboard Hot 100 Song Duration",
+                       subtitle = "By Year: 2000-2017",
+                       x = "Year",
+                       y = "Average Song Length (Minutes)") +
+                  theme(plot.title = element_text(hjust = 0.5)) + 
+                  theme(plot.subtitle = element_text(hjust = 0.5))
+              } else if(input$type4 == "bot75"){
+                ggplot(avg_duration_75, aes(x = year, y = avgtime)) + 
+                  geom_smooth(size = 0.4, linetype="dotted", se = FALSE) +
+                  geom_smooth(method = lm, se=FALSE) +
+                  labs(title = "Billboard Hot 100 Song Duration",
+                       subtitle = "By Year: 2000-2017",
+                       x = "Year",
+                       y = "Average Song Length (Minutes)") +
+                  theme(plot.title = element_text(hjust = 0.5)) + 
+                  theme(plot.subtitle = element_text(hjust = 0.5))
+              }
+          })
+          
+          output$plot5.1 <- renderPlot({
+            
+            songs$tempo <- as.numeric(songs$tempo)
+            songs$liveness <- as.numeric(songs$liveness)
+            songs$energy <- as.numeric(songs$energy)
+            songs$speechiness <- as.numeric(songs$speechiness)
+            songs$danceability <- as.numeric(songs$danceability)
+            
+            songs_filtered <- songs %>%
+              filter(energy != "unknown") %>%
+              filter(liveness != "unknown") %>%
+              filter(tempo != "unknown") %>%
+              filter(speechiness != "unknown") %>%
+              filter(danceability != "unknown") %>%
+              filter(year %in% input$year2)
+            
+            
+            if (input$analysis == "energy"){
+              ggplot(songs_filtered, aes(x = energy, y = peak_pos)) + 
+                geom_point() +
+                stat_smooth(method = "lm") +
+                scale_y_reverse()
+            } else if (input$analysis == "liveness"){
+              ggplot(songs_filtered, aes(x = liveness, y = peak_pos)) + 
+                geom_point() +
+                stat_smooth(method = "lm") +
+                scale_y_reverse()
+            } else if(input$analysis == "tempo"){
+              ggplot(songs_filtered, aes(x = tempo, y = peak_pos)) + 
+                geom_point() +
+                stat_smooth(method = "lm") +
+                scale_y_reverse()
+            } else if(input$analysis == "speechiness"){
+              ggplot(songs_filtered, aes(x = speechiness, y = peak_pos)) + 
+                geom_point() +
+                stat_smooth(method = "lm") +
+                scale_y_reverse()
+            } else if(input$analysis == "danceability"){
+              ggplot(songs_filtered, aes(x = danceability, y = peak_pos)) + 
+                geom_point() +
+                stat_smooth(method = "lm") +
+                scale_y_reverse()
+            }
+            
+            
+          })
+          
+          output$plot5.2 <- renderPlot({
+            
+            songs$tempo <- as.numeric(songs$tempo)
+            songs$liveness <- as.numeric(songs$liveness)
+            songs$energy <- as.numeric(songs$energy)
+            songs$speechiness <- as.numeric(songs$speechiness)
+            songs$danceability <- as.numeric(songs$danceability)
+            
+            songs_filtered2 <- songs %>%
+              filter(energy != "unknown") %>%
+              filter(liveness != "unknown") %>%
+              filter(tempo != "unknown") %>%
+              filter(speechiness != "unknown") %>%
+              filter(danceability != "unknown") %>%
+              filter(year %in% input$year2)
+            
+            if (input$analysis == "energy"){
+              ggplot(songs_filtered2, aes(x = energy)) + 
+                geom_bar(width = 0.10)
+            } else if (input$analysis == "liveness"){
+              ggplot(songs_filtered2, aes(x = liveness)) + 
+                geom_bar()
+            } else if(input$analysis == "tempo"){
+              ggplot(songs_filtered2, aes(x = tempo)) + 
+                geom_bar()
+            } else if(input$analysis == "speechiness"){
+              ggplot(songs_filtered2, aes(x = speechiness)) + 
+                geom_bar()
+            } else if(input$analysis == "danceability"){
+              ggplot(songs_filtered2, aes(x = danceability)) + 
+                geom_bar()
+            
+            }
+            
+          })
+          
+          
+              
 }
       
       
