@@ -12,6 +12,7 @@ library(RColorBrewer)
 library(RCurl)
 library(XML)
 library(shinythemes)
+library(stargazer)
 library(tidyverse)
 
 songs <- read_rds("songs.rds")
@@ -20,7 +21,15 @@ songs <- read_rds("songs.rds")
 # Define UI for application that draws a histogram
 ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"), 
                  theme = shinytheme("lumen"),
-              
+       
+       tabPanel("How-To Guide",
+                fluidRow(
+                  column(12,
+                         wellPanel(
+                           htmlOutput("about")
+                         ))
+                )),          
+                        
        tabPanel("The Changing Music Industry",
                 sidebarLayout(
                   sidebarPanel(
@@ -76,6 +85,7 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                                    "Top 10" = "top10",
                                    "Top 25" = "top25",
                                    "26-100" = "bot75")),
+                    htmlOutput("title_stats"),
                     helpText("Over time, song titles within the Top 100 have been getting significantly shorter."),
                     # Change to explain more
                     # Should I include summary stats?
@@ -96,6 +106,7 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                                    "Top 10" = "top10",
                                    "Top 25" = "top25",
                                    "26-100" = "bot75")),
+                    htmlOutput("duration_stats"),
                     helpText("Over time, song duration within the Top 100 have been getting significantly shorter."),
                     # Change to explain more
                     # Include summary stats?
@@ -111,18 +122,19 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                   sidebarPanel(
                     selectInput("analysis", 
                                 "Choose component to analyze:",
-                    choices = c("Danceability" = "danceability",
-                                "Energy" = "energy",
+                    choices = c("Energy" = "energy",
                                 "Liveness" = "liveness",
                                 "Tempo" = "tempo", 
-                                "Speechiness" = "speechiness"),
-                    selected = "danceability"),
+                                "Speechiness" = "speechiness",
+                                "Danceability" = "danceability"),
+                    selected = "energy"),
                     pickerInput("year2",
                                 "Year:",
                                 choices = unique(songs$year),
-                                selected = "2017",
+                                selected = unique(songs$year),
                                 options = list(`actions-box` = TRUE),
                                 multiple = TRUE),
+                    htmlOutput("music_stats"),
                   helpText("Descrip Here")
                 ),
                 mainPanel(
@@ -132,7 +144,20 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                 
 
 server <- function(input, output) {
-
+  
+  # About Page
+  
+  output$about <- renderUI({
+    HTML(paste(
+      h3("Summary"),
+      p("What makes a hit song?"),
+      p("Let's explore!"),
+      h3("Sources"),
+      p("dudes name",
+        tags$a(href = "https://www.google.com"))
+    ))
+  })
+  
   # Plot 1
   top_1 <- songs %>%
     filter(peak_pos == 1) %>%
@@ -423,6 +448,81 @@ server <- function(input, output) {
             }
           })
           
+          output$title_stats <- renderUI({
+            
+            title_length <- songs %>%
+              group_by(year) %>%
+              mutate(tlength = nchar(title))
+            
+            avg_title_length_100 <- title_length %>%
+              group_by(year) %>%
+              mutate(avgtlength = mean(tlength))
+            
+            avg_title_length_1 <- title_length %>%
+              filter(peak_pos == 1) %>%
+              group_by(year) %>%
+              mutate(avgtlength = mean(tlength))
+            
+            avg_title_length_1 <- title_length %>%
+              filter(peak_pos == 1) %>%
+              group_by(year) %>%
+              mutate(avgtlength = mean(tlength))
+            
+            avg_title_length_10 <- title_length %>%
+              filter(peak_pos <= 10) %>%
+              group_by(year) %>%
+              mutate(avgtlength = mean(tlength))
+            
+            avg_title_length_25 <- title_length %>%
+              filter(peak_pos <= 25) %>%
+              group_by(year) %>%
+              mutate(avgtlength = mean(tlength))
+            
+            avg_title_length_75 <- title_length %>%
+              filter(peak_pos >= 26) %>%
+              group_by(year) %>%
+              mutate(avgtlength = mean(tlength))
+            
+            if (input$type3 == "all100"){
+              HTML(stargazer(lm(data = avg_title_length_100,
+                                avgtlength ~ year),
+                             type = "html",
+                             covariate.labels = c("Title Length", "Year"),
+                             dep.var.labels="Average Title Length"
+              ))
+            } else if (input$type3 == "top1"){
+              HTML(stargazer(lm(data = avg_title_length_1,
+                                avgtlength ~ year),
+                             type = "html",
+                             covariate.labels = c("Title Length", "Year"),
+                             dep.var.labels="Average Title Length"
+              ))
+            } else if(input$type3 == "top10"){
+              HTML(stargazer(lm(data = avg_title_length_10,
+                                avgtlength ~ year),
+                             type = "html",
+                             covariate.labels = c("Title Length", "Year"),
+                             dep.var.labels="Average Title Length"
+              ))
+            } else if(input$type3 == "top25"){
+              HTML(stargazer(lm(data = avg_title_length_25,
+                                avgtlength ~ year),
+                             type = "html",
+                             covariate.labels = c("Title Length", "Year"),
+                             dep.var.labels="Average Title Length"
+              ))
+            } else if(input$type3 == "bot75"){
+              HTML(stargazer(lm(data = avg_title_length_75,
+                                avgtlength ~ year),
+                             type = "html",
+                             covariate.labels = c("Title Length", "Year"),
+                             dep.var.labels="Average Title Length"
+              ))
+              
+            }
+            
+          })
+          
           # Plot 4
           
           output$plot4 <- renderPlot({
@@ -513,6 +613,83 @@ server <- function(input, output) {
               }
           })
           
+          output$duration_stats <- renderUI({
+            
+            duration <- songs %>%
+              mutate(duration = as.integer(duration_ms)) %>%
+              filter(duration != "NA")
+            
+            avg_duration_100 <- duration %>%
+              group_by(year) %>%
+              mutate(avgtime = mean(duration)) %>%
+              mutate(avgtime = avgtime/60000)
+            
+            avg_duration_1 <- duration %>%
+              filter(peak_pos == 1) %>%
+              group_by(year) %>%
+              mutate(avgtime = mean(duration)) %>%
+              mutate(avgtime = avgtime/60000)
+            
+            avg_duration_10 <- duration %>%
+              filter(peak_pos <= 10) %>%
+              group_by(year) %>%
+              mutate(avgtime = mean(duration)) %>%
+              mutate(avgtime = avgtime/60000)
+            
+            avg_duration_25 <- duration %>%
+              filter(peak_pos <= 25) %>%
+              group_by(year) %>%
+              mutate(avgtime = mean(duration)) %>%
+              mutate(avgtime = avgtime/60000)
+            
+            avg_duration_75 <- duration %>%
+              filter(peak_pos >= 25) %>%
+              group_by(year) %>%
+              mutate(avgtime = mean(duration)) %>%
+              mutate(avgtime = avgtime/60000)
+            
+            if (input$type4 == "all100"){
+              HTML(stargazer(lm(data = avg_duration_100,
+                                avgtime ~ year),
+                             type = "html",
+                             covariate.labels = c("Duration", "Year"),
+                             dep.var.labels="Average Length (s)"
+              ))
+            } else if (input$type4 == "top1"){
+              HTML(stargazer(lm(data = avg_duration_1,
+                                avgtime ~ year),
+                             type = "html",
+                             covariate.labels = c("Duration", "Year"),
+                             dep.var.labels="Average Length (s)"
+              ))
+            } else if(input$type4 == "top10"){
+              HTML(stargazer(lm(data = avg_duration_10,
+                                avgtime ~ year),
+                             type = "html",
+                             covariate.labels = c("Duration", "Year"),
+                             dep.var.labels="Average Length (s)"
+              ))
+            } else if(input$type4 == "top25"){
+              HTML(stargazer(lm(data = avg_duration_25,
+                                avgtime ~ year),
+                             type = "html",
+                             covariate.labels = c("Duration", "Year"),
+                             dep.var.labels="Average Length (s)"
+              ))
+            } else if(input$type4 == "bot75"){
+              HTML(stargazer(lm(data = avg_duration_75,
+                                avgtime ~ year),
+                             type = "html",
+                             covariate.labels = c("Duration", "Year"),
+                             dep.var.labels="Average Length (s)"
+              ))
+              
+            }
+            
+          })
+          
+          
+          
           output$plot5.1 <- renderPlot({
             
             songs$tempo <- as.numeric(songs$tempo)
@@ -531,30 +708,55 @@ server <- function(input, output) {
             
             
             if (input$analysis == "energy"){
-              ggplot(songs_filtered, aes(x = energy, y = peak_pos)) + 
-                geom_point() +
+              ggplot(songs_filtered, aes(x = energy, y = peak_pos))  +
+                geom_jitter(alpha = .3) +
                 stat_smooth(method = "lm") +
-                scale_y_reverse()
+                scale_y_reverse() +
+                labs(title = "Energy Analysis",
+                     subtitle = "Based Upon Top Position",
+                     x = "Energy",
+                     y = "Song's Top Position") +
+                theme(plot.title = element_text(hjust = 0.5))
             } else if (input$analysis == "liveness"){
               ggplot(songs_filtered, aes(x = liveness, y = peak_pos)) + 
-                geom_point() +
+                geom_jitter(alpha = .3) +
                 stat_smooth(method = "lm") +
-                scale_y_reverse()
+                scale_y_reverse() +
+                labs(title = "Liveness Analysis",
+                     subtitle = "Based Upon Top Position",
+                     x = "Liveness",
+                     y = "Song's Top Position") +
+                theme(plot.title = element_text(hjust = 0.5))
             } else if(input$analysis == "tempo"){
               ggplot(songs_filtered, aes(x = tempo, y = peak_pos)) + 
-                geom_point() +
+                geom_jitter(alpha = .3) +
                 stat_smooth(method = "lm") +
-                scale_y_reverse()
+                scale_y_reverse() +
+                labs(title = "Tempo Analysis",
+                     subtitle = "Based Upon Top Position",
+                     x = "Tempo",
+                     y = "Song's Top Position") +
+                theme(plot.title = element_text(hjust = 0.5))
             } else if(input$analysis == "speechiness"){
               ggplot(songs_filtered, aes(x = speechiness, y = peak_pos)) + 
-                geom_point() +
+                geom_jitter(alpha = .3) +
                 stat_smooth(method = "lm") +
-                scale_y_reverse()
+                scale_y_reverse() +
+                labs(title = "Speechiness Analysis",
+                     subtitle = "Based Upon Top Position",
+                     x = "Speechiness",
+                     y = "Song's Top Position") +
+                theme(plot.title = element_text(hjust = 0.5))
             } else if(input$analysis == "danceability"){
               ggplot(songs_filtered, aes(x = danceability, y = peak_pos)) + 
-                geom_point() +
+                geom_jitter(alpha = .3) +
                 stat_smooth(method = "lm") +
-                scale_y_reverse()
+                scale_y_reverse() +
+                labs(title = "Danceability Analysis",
+                     subtitle = "Based Upon Top Position",
+                     x = "Danceability",
+                     y = "Song's Top Position") +
+                theme(plot.title = element_text(hjust = 0.5))
             }
             
             
@@ -568,7 +770,108 @@ server <- function(input, output) {
             songs$speechiness <- as.numeric(songs$speechiness)
             songs$danceability <- as.numeric(songs$danceability)
             
-            songs_filtered2 <- songs %>%
+            songs_filtered1 <- songs %>%
+              filter(energy != "unknown") %>%
+              filter(liveness != "unknown") %>%
+              filter(tempo != "unknown") %>%
+              filter(speechiness != "unknown") %>%
+              filter(danceability != "unknown") %>%
+              filter(year %in% input$year2) %>%
+              filter(peak_pos == 1)
+            
+            songs_filtered_rest <- songs %>%
+              filter(energy != "unknown") %>%
+              filter(liveness != "unknown") %>%
+              filter(tempo != "unknown") %>%
+              filter(speechiness != "unknown") %>%
+              filter(danceability != "unknown") %>%
+              filter(year %in% input$year2) %>%
+              filter(peak_pos != 1)
+            
+            if (input$analysis == "energy"){
+              ggplot(songs_filtered1) + 
+                geom_density(aes(x = energy, colour="1"),
+                             alpha = .2, 
+                             fill="#0000CC") +
+                geom_density(data = songs_filtered_rest,
+                             aes(x = energy, colour="2-100"),
+                             alpha = .2, 
+                             fill = "#CC0000") +
+                scale_colour_manual(name="Song's Top Position",values=c('1' = "#0000CC",
+                                                                 '2-100' = "#CC0000")) +
+                labs(subtitle = "Density Comparison: Top 1 vs. Rest",
+                     x = "Energy",
+                     y = "Density")
+            } else if (input$analysis == "liveness"){
+              ggplot(songs_filtered1) +
+              geom_density(aes(x = liveness, colour="1"),
+                     alpha = .2, 
+                     fill="#0000CC") +
+                geom_density(data = songs_filtered_rest,
+                             aes(x = liveness, colour="2-100"),
+                             alpha = .2, 
+                             fill = "#CC0000") +
+                scale_colour_manual(name="Song's Top Position",values=c('1' = "#0000CC",
+                                                                        '2-100' = "#CC0000"))+
+                labs(subtitle = "Density Comparison: Top 1 vs. Rest",
+                     x = "Liveness",
+                     y = "Density")
+            } else if(input$analysis == "tempo"){
+              ggplot(songs_filtered1) +
+                geom_density(aes(x = tempo, colour="1"),
+                     alpha = .2, 
+                     fill="#0000CC") +
+                geom_density(data = songs_filtered_rest,
+                             aes(x = tempo, colour="2-100"),
+                             alpha = .2, 
+                             fill = "#CC0000") +
+                scale_colour_manual(name="Song's Top Position",values=c('1' = "#0000CC",
+                                                                        '2-100' = "#CC0000")) +
+                labs(subtitle = "Density Comparison: Top 1 vs. Rest",
+                     x = "Tempo",
+                     y = "Density")
+            } else if(input$analysis == "speechiness"){
+              ggplot(songs_filtered1) +
+                geom_density(aes(x = speechiness, colour="1"),
+                     alpha = .2, 
+                     fill="#0000CC") +
+                geom_density(data = songs_filtered_rest,
+                             aes(x = speechiness, colour="2-100"),
+                             alpha = .2, 
+                             fill = "#CC0000") +
+                scale_colour_manual(name="Song's Top Position",values=c('1' = "#0000CC",
+                                                                        '2-100' = "#CC0000"))+
+                labs(subtitle = "Density Comparison: Top 1 vs. Rest",
+                     x = "Speechiness",
+                     y = "Density")
+            } else if(input$analysis == "danceability"){
+              ggplot(songs_filtered1) +
+                geom_density(aes(x = danceability, colour="1"),
+                     alpha = .2, 
+                     fill="#0000CC") +
+                geom_density(data = songs_filtered_rest,
+                             aes(x = danceability, colour="2-100"),
+                             alpha = .2, 
+                             fill = "#CC0000") +
+                scale_colour_manual(name="Song's Top Position",
+                                    values=c('1' = "#0000CC",'2-100' = "#CC0000"))+
+                labs(subtitle = "Density Comparison: Top 1 vs. Rest",
+                     x = "Danceability",
+                     y = "Density")
+            
+            }
+            
+          })
+          
+          output$music_stats <- renderUI({
+            
+            songs$tempo <- as.numeric(songs$tempo)
+            songs$liveness <- as.numeric(songs$liveness)
+            songs$energy <- as.numeric(songs$energy)
+            songs$speechiness <- as.numeric(songs$speechiness)
+            songs$danceability <- as.numeric(songs$danceability)
+            
+            lm_data <- songs %>%
               filter(energy != "unknown") %>%
               filter(liveness != "unknown") %>%
               filter(tempo != "unknown") %>%
@@ -576,22 +879,43 @@ server <- function(input, output) {
               filter(danceability != "unknown") %>%
               filter(year %in% input$year2)
             
-            if (input$analysis == "energy"){
-              ggplot(songs_filtered2, aes(x = energy)) + 
-                geom_bar(width = 0.10)
-            } else if (input$analysis == "liveness"){
-              ggplot(songs_filtered2, aes(x = liveness)) + 
-                geom_bar()
-            } else if(input$analysis == "tempo"){
-              ggplot(songs_filtered2, aes(x = tempo)) + 
-                geom_bar()
-            } else if(input$analysis == "speechiness"){
-              ggplot(songs_filtered2, aes(x = speechiness)) + 
-                geom_bar()
-            } else if(input$analysis == "danceability"){
-              ggplot(songs_filtered2, aes(x = danceability)) + 
-                geom_bar()
             
+            if (input$analysis == "energy"){
+              HTML(stargazer(lm(data = lm_data,
+                                energy ~ peak_pos),
+                             type = "html",
+                             covariate.labels = c("Energy", "Top Position"),
+                             dep.var.labels="Energy"
+              ))
+            } else if (input$analysis == "liveness"){
+              HTML(stargazer(lm(data = lm_data,
+                                liveness ~ peak_pos),
+                             type = "html",
+                             covariate.labels = c("Liveness", "Top Position"),
+                             dep.var.labels="Energy"
+              ))
+            } else if(input$analysis == "tempo"){
+              HTML(stargazer(lm(data = lm_data,
+                                tempo ~ peak_pos),
+                             type = "html",
+                             covariate.labels = c("Tempo", "Top Position"),
+                             dep.var.labels="Energy"
+              ))
+            } else if(input$analysis == "speechiness"){
+              HTML(stargazer(lm(data = lm_data,
+                                speechiness ~ peak_pos),
+                             type = "html",
+                             covariate.labels = c("Speechiness", "Top Position"),
+                             dep.var.labels="Energy"
+              ))
+            } else if(input$analysis == "danceability"){
+              HTML(stargazer(lm(data = lm_data,
+                                danceability ~ peak_pos),
+                             type = "html",
+                             covariate.labels = c("Danceability", "Top Position"),
+                             dep.var.labels="Energy"
+              ))
+              
             }
             
           })
