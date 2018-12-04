@@ -151,12 +151,13 @@ server <- function(input, output) {
     HTML(paste(
       h3("Summary"),
       p("What makes a hit song?"),
+      p("Over the past 20 years, the Billboard Hot 100 has kept data on the popularity of songs."),
       p("Let's explore!"),
-      h3("Sources"),
-      p("dudes name",
-        tags$a(href = "https://www.google.com"))
-    ))
+      h3("Source"),
+      a("Michael Tauberg: Billboard Hot 100", href = "https://github.com/taubergm/Billboard-Spotify-Lyrics-Music-analysis"
+    )))
   })
+  
   
   # Plot 1
   top_1 <- songs %>%
@@ -653,35 +654,35 @@ server <- function(input, output) {
                                 avgtime ~ year),
                              type = "html",
                              covariate.labels = c("Duration", "Year"),
-                             dep.var.labels="Average Length (s)"
+                             dep.var.labels="Average Length (min)"
               ))
             } else if (input$type4 == "top1"){
               HTML(stargazer(lm(data = avg_duration_1,
                                 avgtime ~ year),
                              type = "html",
                              covariate.labels = c("Duration", "Year"),
-                             dep.var.labels="Average Length (s)"
+                             dep.var.labels="Average Length (min)"
               ))
             } else if(input$type4 == "top10"){
               HTML(stargazer(lm(data = avg_duration_10,
                                 avgtime ~ year),
                              type = "html",
                              covariate.labels = c("Duration", "Year"),
-                             dep.var.labels="Average Length (s)"
+                             dep.var.labels="Average Length (min)"
               ))
             } else if(input$type4 == "top25"){
               HTML(stargazer(lm(data = avg_duration_25,
                                 avgtime ~ year),
                              type = "html",
                              covariate.labels = c("Duration", "Year"),
-                             dep.var.labels="Average Length (s)"
+                             dep.var.labels="Average Length (min)"
               ))
             } else if(input$type4 == "bot75"){
               HTML(stargazer(lm(data = avg_duration_75,
                                 avgtime ~ year),
                              type = "html",
                              covariate.labels = c("Duration", "Year"),
-                             dep.var.labels="Average Length (s)"
+                             dep.var.labels="Average Length (min)"
               ))
               
             }
@@ -878,8 +879,7 @@ server <- function(input, output) {
               filter(speechiness != "unknown") %>%
               filter(danceability != "unknown") %>%
               filter(year %in% input$year2)
-            
-            
+          
             if (input$analysis == "energy"){
               HTML(stargazer(lm(data = lm_data,
                                 energy ~ peak_pos),
@@ -920,19 +920,6 @@ server <- function(input, output) {
             
           })
           
-          
-              
 }
-      
-      
-      
-
-shinyApp(ui, server)
   
-
-              
-                    
-    
-                    
-        
-
+shinyApp(ui, server)
