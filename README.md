@@ -1,4 +1,14 @@
-# Bop-to-the-Top-What-Makes-a-Hit-
+# Bop to the Top: What Makes a Hit?
 What makes a song a #1 hit?
 
-How have the top 100 songs changed over time?I first explore title length, song duration, and genre information. I then explore these same factors, differentiating between number one songs, top ten songs, and songs that never escaped the 11-100 range. I will also use sentiment analysis to see how words to our favorite songs have changed over time and if they differentiate with songs that make that #1 spot.
+# Summary
+How have the top 100 songs changed over time? I first explore title length, song duration, and genre information. I then explore these same factors, differentiating between number one songs, top ten songs, top 25 songs, and songs that never escaped the 26-100 range. I also allow an analysis based upon year (2000-2017).Finally, I will break down components of the actual music and lyrics, such as tempo, danceability, and liveness, to see how our favorite songs have changed over time and if there is a differentiatiation between what makes a song that holds the #1 spot.
+
+# Data Source
+The following data was scraped from the Billboard Hot 100 website by Michael Tauberg (https://github.com/taubergm/Billboard-Spotify-Lyrics-Music-analysis). It was then cleaned and turned in to a manipulatable form of data for users to work with.
+
+# Conclusions
+After statistically analyzing the various factors of a song, I give suggestions on how to maximize chances of a top hit. My reccomendations include: a r&b, rap, or pop song; a song with a short title (only 12-13 characters in length), a song that ranges 3:30-4:00 minutes in length; a song with a high level of "danceability", a measurement of how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity.
+
+
+The following project was created by Jordan Topoleski as a Harvard University Gov 1005 final project.
