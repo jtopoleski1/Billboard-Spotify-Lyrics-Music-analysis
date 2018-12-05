@@ -1,3 +1,4 @@
+# Loaded all packages neccessary for the project
 library(shiny)
 library(shinyWidgets)
 library(dplyr)
@@ -15,13 +16,22 @@ library(shinythemes)
 library(stargazer)
 library(tidyverse)
 
+# Read in the songs data, previously manipulated in a RMD workspace and converted
+# to a .RDS for easy incorperation
+
 songs <- read_rds("songs.rds")
 
 
-# Define UI for application that draws a histogram
+# Define the navbar overall heading, chose the lumen shiny theme for a clean
+# presentation of data
+
 ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"), 
                  theme = shinytheme("lumen"),
        
+         # Create the first tab with a html text output
+         # This section allows the reader to gain an overall understanding of
+         # what the proejct is about and is an asthetically pleasing intro page
+                 
        tabPanel("Overview",
                 fluidRow(
                   column(12,
@@ -29,6 +39,9 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                            htmlOutput("about")
                          ))
                 )),          
+       
+       # Creates the second tab, providing information on the changing music
+       # industry, based upon songs that appear on the list over time
                         
        tabPanel("The Changing Music Industry",
                 sidebarLayout(
