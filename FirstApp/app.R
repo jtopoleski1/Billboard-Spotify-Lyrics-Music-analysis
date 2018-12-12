@@ -1,4 +1,5 @@
 # Loaded all packages neccessary for the project
+
 library(shiny)
 library(shinyWidgets)
 library(dplyr)
@@ -14,6 +15,9 @@ library(RCurl)
 library(XML)
 library(shinythemes)
 library(stargazer)
+
+# Loaded tinyverse last in order to make sure no other package overrides its functions
+
 library(tidyverse)
 
 # Read in the songs data, previously manipulated in a RMD workspace and converted
@@ -22,15 +26,18 @@ library(tidyverse)
 songs <- read_rds("songs.rds")
 
 
-# Define the navbar overall heading, chose the lumen shiny theme for a clean
-# presentation of data
+# Define the navbar overall heading, which allows for clean presentation of tabs to switch between
+# chose the lumen shiny theme for a clean presentation of data (it's a simple, clean theme)
 
 ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"), 
                  theme = shinytheme("lumen"),
        
-         # Create the first tab with a html text output
+         # Create the first tab called "Overview" with a html text output (define in the server).
+         # The fluidRow creates rows for the about output (with neat formatting).
          # This section allows the reader to gain an overall understanding of
-         # what the proejct is about and is an asthetically pleasing intro page
+         # what the proejct is about and is an asthetically pleasing intro page.
+         # Finally, the "12" column definition refers to the width based upon the 
+         # Bootstrap 12-wide grid system (all columns must add up to 12).
                  
        tabPanel("Overview",
                 fluidRow(
@@ -40,8 +47,15 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                          ))
                 )),          
        
-       # Creates the second tab, providing information on the changing music
-       # industry, based upon songs that appear on the list over time
+       # Creates the second tab called "The Changing Music Industry", providing information 
+       # on the number of songs that have appeared on the Hot 100 over time.
+       # Sets up radio buttons in order to allow the user to easily click between a category 
+       # of songs based upon their highest rating (this featured is maintained throughout).
+       # The choices argument is used to give a clean output to the names the view sees within
+       # the sidebar. Additionally, a text output explains the outcome.
+       
+       # Stylistic note: defining each sidebar panel within EVERY tab panel allows for a certain
+       # panel to only appear within certain individual tabs and NOT on every tab.
                         
        tabPanel("The Changing Music Industry",
                 sidebarLayout(
@@ -58,11 +72,25 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
         
                    ),
                   
+                # Graph output in the main panel (defined in server), a line plot of the number of
+                # songs appearing on the Hot 100 over time.
+                
                   mainPanel(
                     plotOutput("plot1")
                   )
                 )
        ),
+       
+       # Creates the third tab called "Genre", providing information on the genre of songs
+       # that have appeared on the top charts over time.
+       # Sets up radio buttons in order to allow the user to easily click between a category 
+       # of songs based upon their highest rating (this featured is maintained throughout) for the 
+       # bar graph output. Additionally, the sidebar sets up a picker with ALL years preselected for
+       # the bottom box and whiskers plot in order to see popularity during certain years.
+       # The choices argument is used to give a clean output to the names the view sees within
+       # the sidebar. Additionally, a text output explains the outcome and gives advice on how to 
+       # make a hit song.
+       
        tabPanel("Genre",
                 sidebarLayout(
                   sidebarPanel(
@@ -84,10 +112,26 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                     helpText("Step 1 of 'How to Make a Top Hit Song': r&b, pop, and rap are the way to go.")
                   ),
                   
+                  # For this main output, there are two graphs: a bar graph showing the number of 
+                  # appearences by genre (2.1) and a box and whiskers plot showing the average peak
+                  # position of songs on the charts in each genre (2.2).
+                  
                   mainPanel(
                     plotOutput("plot2.1"),
                     plotOutput("plot2.2")
                   ))),
+       
+       # Creates the fourth tab called "Title Length", providing information on how the number of
+       # charaters per song title has changed over time.
+       # Sets up radio buttons in order to allow the user to easily click between a category 
+       # of songs based upon their highest rating (this featured is maintained throughout).
+       # The choices argument is used to give a clean output to the names the view sees within
+       # the sidebar.
+       # Additionally, a set of summary statistics is added to the sidebar panel, further defined 
+       # within the server.
+       # Finally, a text output explains the outcome and gives advice on how to make a hit song.
+       
+       
        tabPanel("Title Length",
                 sidebarLayout(
                   sidebarPanel(
@@ -103,10 +147,24 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                     helpText("Step 2 of 'How to Make a Top Hit Song': a shorter title (12-13 characters) may be the way to go, but there isn't much statistical significance.")
                   ),
                   
+                  # Graph output in the main panel (defined in server), a line plot of the average title
+                  # legnth of songs based upon characters within the title over timel.
+                  
                   mainPanel(
                     plotOutput("plot3")
                   )
                 )),
+       
+       # Creates the fifth tab called "Duration", providing information on how the length of
+       # sogns on the Hot 100 has changed over time.
+       # Sets up radio buttons in order to allow the user to easily click between a category 
+       # of songs based upon their highest rating (this featured is maintained throughout).
+       # The choices argument is used to give a clean output to the names the view sees within
+       # the sidebar.
+       # Additionally, a set of summary statistics is added to the sidebar panel, further defined 
+       # within the server.
+       # Finally, a text output explains the outcome and gives advice on how to make a hit song.
+       
        tabPanel("Duration",
                 sidebarLayout(
                   sidebarPanel(
@@ -122,10 +180,33 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                     helpText("Step 3 of 'How to Make a Top Hit Song': a shorter song (about 3:30-4 minutes) seems like the way to go.")
                   ),
                   
+                  # Graph output in the main panel (defined in server), a line plot of the average song
+                  # legnth (in minutes) and how it has changed over time.
+                  
                   mainPanel(
                     plotOutput("plot4")
                   )
                 )),
+       
+       # Creates the sixth tab called "Music Analysis", providing information on several
+       # important components and their impact on songs' peak position on the chart.
+            # These options are explained in-depth within the server.
+       # Sets up radio buttons in order to allow the user to easily click between a category 
+       # of songs based upon their highest rating (this featured is maintained throughout).
+       # Additionally, the sidebar sets up a picker with ALL years preselected to allow
+       # the reader to look at smaller, more readable sets of data.
+       # The choices argument is used to give a clean output to the names the view sees within
+       # the sidebar.
+       # Additionally, a set of summary statistics is added to the sidebar panel, further defined 
+       # within the server.
+       # Finally, a text output explains the outcome and gives advice on how to make a hit song.
+       
+       
+       
+       # STILL NEED TO EDIT THE ADVICE AND RECAP OF WHAT HAPPENS
+       
+       
+
        tabPanel("Music Analysis",
                 sidebarLayout(
                   sidebarPanel(
@@ -150,10 +231,18 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                   helpText("Speechiness: detects the presence of spoken words in a track. If above 0.66, it is probably made of spoken words, a score between 0.33 and 0.66 is a song that may contain both music and words, and a score below 0.33 means the song does not have any speech."),
                   helpText("Danceability: describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.0 is least danceable and 1.0 is most danceable.")
                 ),
+                
+                # For this main output, there are two graphs: a dot plot (with regression line) 
+                # showing one of the compoents vs. a song's peak position (5.1) and a density plot 
+                # showing the concentration of songs in the top and non-top position around a certain 
+                # level of a measurement (like Energy) (5.2).
+                
                 mainPanel(
                   plotOutput("plot5.1"),
                   plotOutput("plot5.2")
                 ))))
+
+# Define plots and all of the information and output that is displayed with the UI
                 
 
 server <- function(input, output) {
