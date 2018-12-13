@@ -29,7 +29,6 @@ saveRDS(songs, file = "songs.rds")
 num <- songs %>%
   count(year)
 
-
 # Potentially animate??
 ggplot(num, aes(x = year, y = n)) + 
   geom_line() +
@@ -235,6 +234,22 @@ year <- reactive({
         } else if(input$year == "2000"){
           year <- "2000"
         }})
+        
+        library(shiny)
+library(shinyWidgets)
+library(dplyr)
+library(ggplot2)
+library(tidytext)
+library(ggridges)
+library(sjPlot)
+library(wordcloud)
+library(tm)
+library(SnowballC)
+library(RColorBrewer)
+library(RCurl)
+library(XML)
+library(shinythemes)
+library(stargazer)
 
 
 

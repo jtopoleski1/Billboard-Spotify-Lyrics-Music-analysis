@@ -2,19 +2,15 @@
 
 library(shiny)
 library(shinyWidgets)
-library(dplyr)
-library(ggplot2)
-library(tidytext)
 library(ggridges)
 library(sjPlot)
-library(wordcloud)
 library(tm)
-library(SnowballC)
 library(RColorBrewer)
 library(RCurl)
 library(XML)
 library(shinythemes)
 library(stargazer)
+library(tidyverse)
 
 # Loaded tinyverse last in order to make sure no other package overrides its functions
 
@@ -32,6 +28,7 @@ songs <- read_rds("songs.rds")
 ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"), 
                  theme = shinytheme("lumen"),
        
+         # TAB 1
          # Create the first tab called "Overview" with a html text output (define in the server).
          # The fluidRow creates rows for the about output (with neat formatting).
          # This section allows the reader to gain an overall understanding of
@@ -47,6 +44,7 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                          ))
                 )),          
        
+       # TAB 2
        # Creates the second tab called "The Changing Music Industry", providing information 
        # on the number of songs that have appeared on the Hot 100 over time.
        # Sets up radio buttons in order to allow the user to easily click between a category 
@@ -81,6 +79,7 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                 )
        ),
        
+       # TAB 3
        # Creates the third tab called "Genre", providing information on the genre of songs
        # that have appeared on the top charts over time.
        # Sets up radio buttons in order to allow the user to easily click between a category 
@@ -121,6 +120,7 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                     plotOutput("plot2.2")
                   ))),
        
+       # TAB 4
        # Creates the fourth tab called "Title Length", providing information on how the number of
        # charaters per song title has changed over time.
        # Sets up radio buttons in order to allow the user to easily click between a category 
@@ -155,6 +155,7 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                   )
                 )),
        
+       # TAB 5 
        # Creates the fifth tab called "Duration", providing information on how the length of
        # sogns on the Hot 100 has changed over time.
        # Sets up radio buttons in order to allow the user to easily click between a category 
@@ -188,6 +189,7 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                   )
                 )),
        
+       # TAB 6
        # Creates the sixth tab called "Music Analysis", providing information on several
        # important components and their impact on songs' peak position on the chart.
             # These options are explained in-depth within the server.
@@ -229,7 +231,8 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
                   helpText("Liveness: describes the probability that the song was recorded with a live audience. A value above 0.8 provides strong likelihood that the track is live."),
                   helpText("Tempo: describes the speed/rate the song is played, measure in beats per minute"),
                   helpText("Speechiness: detects the presence of spoken words in a track. If above 0.66, it is probably made of spoken words, a score between 0.33 and 0.66 is a song that may contain both music and words, and a score below 0.33 means the song does not have any speech."),
-                  helpText("Danceability: describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.0 is least danceable and 1.0 is most danceable.")
+                  helpText("Danceability: describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.0 is least danceable and 1.0 is most danceable."),
+                  helpText("With so much data, it is hard to see a sustainable pattern. For most components, there seems to be no difference. However, dancability shows a relatively strong positive upward trend. Additionally, looking at the density plot shows that songs in the number one position are consistently more dancable than those in the 2-100 position. So, Step 4: put some boogie in it!")
                 ),
                 
                 # For this main output, there are two graphs: a dot plot (with regression line) 
@@ -247,7 +250,13 @@ ui <- navbarPage(strong("Bop to the Top: What Makes a Billboard Top Hit?"),
 
 server <- function(input, output) {
   
-  # About Page
+  # TAB 1: OVERVIEW
+  # This page sets up the first tab, titled "Overview". It provides a brief summary of
+  # what the project is about (using HTML), along with a precautionary measure about the 
+  # findings. I chose to include this because while this data may point to many conclusions, 
+  # all findings MUST be understood as simply correlative.
+  # Finally, I give a source to the data, using href to embed a link within the text so that 
+  # readers can easily access the data for analysis and reference.
   
   output$about <- renderUI({
     HTML(paste(
@@ -263,7 +272,13 @@ server <- function(input, output) {
   })
   
   
-  # Plot 1
+# TAB 2: THE CHANGING MUSIC INDUSTRY
+  # To start this tab, I first define the data I am looking to analyze.
+  # In specific, I need to count how many songs appear within the top charts
+  # per year. Additionally, I create 5 different variations of this, each
+  # stratified by the positions of the songs I wish to look at (and allow
+  # manipulation of within the sidebar).
+  
   top_1 <- songs %>%
     filter(peak_pos == 1) %>%
     count(year)
@@ -282,7 +297,17 @@ server <- function(input, output) {
   
   all_100 <- songs %>%
     count(year)
-      
+  
+  # Next, I render the plot that appears within the first tab. In order to ensure
+  # it is interactive, I then define "if then" and "else" argments to change the input of 
+  # the graph depending on what stratification is selected within the sidebar. This
+  # is all using the data I generated above. The "if" conditions are presented for
+  # selection within the sidebar, which is further explained above in the UI.
+  # Finally, each variation of the graph is a line graph with the addition of 
+  # vertical lines added during the time periods when YouTube, Spotify, and Apple
+  # Music were each launched. I chose to include this (and to put them at different
+  # vertical levels) to assist the viewer in considering some salient factors to the 
+  # situation we are analyzing.
   
       output$plot1 <- renderPlot({
         if (input$type == "all100"){
@@ -369,7 +394,14 @@ server <- function(input, output) {
       })
       
       
-      # Plot 2
+#TAB 3: GENRE
+   # To start this tab, I first define the data I am looking to analyze.
+   # In specific, I need to filter the songs by the categories of peak 
+   # position that I present as choices within the sidebar. 
+   # STYLISTIC CHOICE: I decided to filter out all songs in the "unknown"
+   # genre category because it added unncessary noise to my charts and added
+   # uncertainty. In general, I am just trying to look at what genres make a 
+   # difference, and "unknown" is irrelevant to this conversation.
       
       top_1_new <- songs %>%
         filter(peak_pos == 1) %>%
@@ -390,7 +422,15 @@ server <- function(input, output) {
       all_100_new <- songs %>%
         filter(broad_genre != "unknown")
       
-        
+      # Graph 1
+      # I render the first plot that appears within the second tab. In order to ensure
+      # it is interactive, I then define "if then" and "else" argments to change the input of 
+      # the graph depending on what stratification is selected within the sidebar. This
+      # is all using the data I generated above. The "if" conditions are presented for
+      # selection within the sidebar, which is further explained above in the UI.
+      # This graph is a bar chart that counts the number of songs that appeaer on the
+      # top charts per genre. 
+      
         output$plot2.1 <- renderPlot({
           if (input$type2 == "all100"){
             ggplot(all_100_new, aes(x = broad_genre)) + 
@@ -440,6 +480,20 @@ server <- function(input, output) {
           }
         })
           
+        # Graph 2
+        # Next, I render the second plot that appears within the second tab. I first
+        # define the the input to make the graph interactive. In this case, the input
+        # is year, a selected input the viewer can choose within the sidebar panel.
+        # Like above, a stylistically chose to filter to out the "unknown" genre for
+        # the same reason. 
+        # Fianlly, I render a box and whiskers plot that analyzes the IQR and median
+        # of all of the songs that do appear on the charts (by genre). This allows the 
+        # viewer to see where songs tend to peak at per genre when they do actually
+        # appear on the top charts.
+        # STYLISTIC NOTE: I chose to reverse the y-axis scale because it makes sense
+        # from a viewer perspective for a higher song position to be closer to be at 
+        # the top of the frame of reference. In this case, a lower number actually means
+        # a higher position (which is why 1 is at the very top).
             
           output$plot2.2 <- renderPlot({
             year_songs <- 
@@ -455,7 +509,6 @@ server <- function(input, output) {
                    subtitle = "Based Upon Genre: 2000-2017",
                    x = "Genre",
                    y = "Peak Position") +
-              # How to get the y-axis to say 1 at top and NOT 0???
               scale_y_reverse() +
               theme(plot.title = element_text(hjust = 0.5)) + 
               theme(plot.subtitle = element_text(hjust = 0.5))
@@ -463,10 +516,15 @@ server <- function(input, output) {
             
       }) 
           
-          # Plot 3
+#TAB 4: TITLE LENGTH
+  # To start this tab, I first define the data I am looking to analyze.
+  # In specific, I count the number of characters within every song's title.
+  # Then, to stratify this to align with the input selections of the songs'
+  # highest ratings, I find the mean number of characters per song within each
+  # stratification.
           
           output$plot3 <- renderPlot({
-            
+      
             title_length <- songs %>%
               group_by(year) %>%
               mutate(tlength = nchar(title))
@@ -499,6 +557,20 @@ server <- function(input, output) {
               filter(peak_pos >= 26) %>%
               group_by(year) %>%
               mutate(avgtlength = mean(tlength))
+            
+            # Graph
+            # I render the plot that appears within the fourth tab. In order to ensure
+            # it is interactive, I then define "if then" and "else" argments to change the input of 
+            # the graph depending on what stratification is selected within the sidebar. This
+            # is all using the data I generated above. The "if" conditions are presented for
+            # selection within the sidebar, which is further explained above in the UI.
+            # The graphs rendered here are line plots that show the change of title length over
+            # time. 
+            # STYLISTIC NOTE: I chose to include a linear model to see the general trend as well
+            # as a smoothed line in order to see the individual variation per year. This proved to
+            # be a worthy addition for the "Top 1" category which has a linear model with a positive
+            # slope, but has title lengths that have decreased in length within more recent years. Within
+            # the linear model, I mute the standard error range because it adds too much clutter.
             
             if (input$type3 == "all100"){
               ggplot(avg_title_length_100, aes(x = year, y = avgtlength)) + 
@@ -553,6 +625,13 @@ server <- function(input, output) {
             }
           })
           
+       # Summary Statistics
+          # Again, I first define the data I am looking to analyze.
+          # In specific, I count the number of characters within every song's title.
+          # Then, to stratify this to align with the input selections of the songs'
+          # highest ratings, I find the mean number of characters per song within each
+          # stratification.
+          
           output$title_stats <- renderUI({
             
             title_length <- songs %>%
@@ -587,6 +666,16 @@ server <- function(input, output) {
               filter(peak_pos >= 26) %>%
               group_by(year) %>%
               mutate(avgtlength = mean(tlength))
+            
+            # I render the stats table that appears within the fourth tab. In order to ensure
+            # it is interactive, I then define "if then" and "else" argments to change the input 
+            # info of the table depending on what stratification is selected within the sidebar. 
+            # The "if" conditions are presented for selection within the sidebar, which is further 
+            # explained above in the UI.
+            # Within the conditional, I use stargzer, which allows for the creation of well-formatted
+            # regression tables, including frame division. Into this, I simply apply a linear
+            # model to the defined variables above and rename the labels to match the format of the graph.
+            # I analyze the relationship between average title length and year to generate this data.
             
             if (input$type3 == "all100"){
               HTML(stargazer(lm(data = avg_title_length_100,
@@ -628,7 +717,16 @@ server <- function(input, output) {
             
           })
           
-          # Plot 4
+#TAB 5: DURATION
+  # To start this tab, I first define the data I am looking to analyze.
+  # In specific, I mutate the duration from a character vector to an integer,
+  # allowing me to apply mathematical functions to it. Then, to stratify this 
+  # to align with the input selections of the songs' highest ratings, I find 
+  # the mean time for a song within each year based upon the song's peak position.
+  # STYLISTIC NOTE: I chose to divide each of the mean times by 60,000 in order to
+  # display the times within minutes, a varibale that is easier for the viewer to
+  # understand. I also chose to filter out any song that has a duration of "NA" 
+  # becuase it is not relevant to the overall trend I am attempting to analyze.
           
           output$plot4 <- renderPlot({
             
@@ -664,6 +762,18 @@ server <- function(input, output) {
                 group_by(year) %>%
                 mutate(avgtime = mean(duration)) %>%
                 mutate(avgtime = avgtime/60000)
+              
+              # Graph
+              # I render the plot that appears within the fifth tab. In order to ensure
+              # it is interactive, I then define "if then" and "else" argments to change the input of 
+              # the graph depending on what stratification is selected within the sidebar. This
+              # is all using the data I generated above. The "if" conditions are presented for
+              # selection within the sidebar, which is further explained above in the UI.
+              # The graphs rendered here are line plots that show the change of song length over
+              # time. 
+              # STYLISTIC NOTE: Again, I chose to include a linear model to see the general trend 
+              # as well as a smoothed line in order to see the individual variation per year. Within
+              # the linear model, I mute the standard error range because it adds too much clutter.
               
               if (input$type4 == "all100"){
                 ggplot(avg_duration_100, aes(x = year, y = avgtime)) + 
@@ -718,6 +828,14 @@ server <- function(input, output) {
               }
           })
           
+        # Summary Statistics
+          # Again, I first define the data I am looking to analyze.
+          # I mutate the duration from a character vector to an integer,
+          # allowing me to apply mathematical functions to it. Then, to stratify this 
+          # to align with the input selections of the songs' highest ratings, I find 
+          # the mean time for a song within each year based upon the song's peak position.
+          # Like above, I also stylistically filter out songs lengths that are "NA".
+        
           output$duration_stats <- renderUI({
             
             duration <- songs %>%
@@ -752,6 +870,16 @@ server <- function(input, output) {
               group_by(year) %>%
               mutate(avgtime = mean(duration)) %>%
               mutate(avgtime = avgtime/60000)
+            
+            # I render the stats table that appears within the fifth tab. In order to ensure
+            # it is interactive, I then define "if then" and "else" argments to change the input 
+            # info of the table depending on what stratification is selected within the sidebar. 
+            # The "if" conditions are presented for selection within the sidebar, which is further 
+            # explained above in the UI.
+            # Within the conditional, I use stargzer, which allows for the creation of well-formatted
+            # regression tables, including frame division. Into this, I simply apply a linear
+            # model to the defined variables above and rename the labels to match the format of the graph.
+            # I analyze the relationship between average song length and year to generate this data.
             
             if (input$type4 == "all100"){
               HTML(stargazer(lm(data = avg_duration_100,
@@ -793,7 +921,16 @@ server <- function(input, output) {
             
           })
           
-          
+#TAB 6: MUSIC ANALYSIS
+  # Within this section, I chose five compoenents of songs to look at. Every song was
+  # rated in each of these categories with some type of numeric by Billboard and are 
+  # more specifically explained within the "Music Analysis" sidebar panel that appears 
+  # within the UI.
+  # First, I mutate each of the components into numerics in order to allow me to compute
+  # statistical and mathematical functions with them.
+  # STYLISTIC NOTE: I then chose to filter out all songs with "unknown" values for any
+  # of the components. This filtered out a relatively small amount of songs and allowed 
+  # the analysis to focus on the specific effects of the components.
           
           output$plot5.1 <- renderPlot({
             
@@ -811,6 +948,19 @@ server <- function(input, output) {
               filter(danceability != "unknown") %>%
               filter(year %in% input$year2)
             
+            # Graph 1
+            # I render the first plot that appears within the sixth tab. In order to ensure
+            # it is interactive, I then define "if then" and "else" argments to change the input of 
+            # the graph depending on what stratification is selected within the sidebar. This
+            # is all using the data I generated above. The "if" conditions are presented for
+            # selection within the sidebar, which is further explained above in the UI.
+            # The graph output is a dot plot with a liner model line applied to it.
+            # STYLISTIC NOTE: I chose a relatively low aplha and chose to jitter the dot plot
+            # in order to allow the viewer to better see the concentration of points. Once again,
+            # I chose to reverse the y-axis scale because it makes sense that (from the persepctive)
+            # of the viewer) for a higher song position to be closer in position to the top of the 
+            # frame of reference. In this case, a lower number actually means a higher position 
+            # (which is why 1 is at the very top).
             
             if (input$analysis == "energy"){
               ggplot(songs_filtered, aes(x = energy, y = peak_pos))  +
@@ -867,6 +1017,16 @@ server <- function(input, output) {
             
           })
           
+          # Graph 2
+          # First, I mutate each of the components into numerics in order to allow me to compute
+          # statistical and mathematical functions with them.
+          # STYLISTIC NOTE: I then chose to filter out all songs with "unknown" values for any
+          # of the components. This filtered out a relatively small amount of songs and allowed 
+          # the analysis to focus on the specific effects of the components.
+          # In "songs_filtered1" I also filter for only the songs that reach the top peak position.
+          # Alternatively, in "songs_filtered_rest", I filter for songs within the 2-100 position.
+          # This allows me to compare the two stratifications within my density plot that I created.
+          
           output$plot5.2 <- renderPlot({
             
             songs$tempo <- as.numeric(songs$tempo)
@@ -892,6 +1052,17 @@ server <- function(input, output) {
               filter(danceability != "unknown") %>%
               filter(year %in% input$year2) %>%
               filter(peak_pos != 1)
+            
+            # Then, I render the second plot that appears within the sixth tab. In order to ensure
+            # it is interactive, I then define "if then" and "else" argments to change the input 
+            # of the graph depending on what stratification is selected within the sidebar. This
+            # is all using the data I generated above. The "if" conditions are presented for
+            # selection within the sidebar, which is further explained above in the UI.
+            # I create a density plot that looks at the concentration of either #1 or #2-100
+            # songs based upon each component.
+            # STYLISTIC NOTE: I define a relatively low alpha so that the viewer can easily see
+            # the overlap that appears. Additionally, the peak position of songs are colored within
+            # the key, which I defined manually using scale_colour_maual.
             
             if (input$analysis == "energy"){
               ggplot(songs_filtered1) + 
@@ -968,6 +1139,14 @@ server <- function(input, output) {
             
           })
           
+        # Summary Statistics
+          # Again, I first define the data I am looking to analyze.
+          # I mutate each of the components into numerics in order to allow me to compute
+          # statistical and mathematical functions with them.
+          # Like above, I then stylistically chose to filter out all songs with "unknown" values for
+          # any of the components. This filtered out a relatively small amount of songs and allowed 
+          # the analysis to focus on the specific effects of the components.
+          
           output$music_stats <- renderUI({
             
             songs$tempo <- as.numeric(songs$tempo)
@@ -983,6 +1162,17 @@ server <- function(input, output) {
               filter(speechiness != "unknown") %>%
               filter(danceability != "unknown") %>%
               filter(year %in% input$year2)
+            
+            # I render the stats table that appears within the sixth tab. In order to ensure
+            # it is interactive, I then define "if then" and "else" argments to change the input 
+            # info of the table depending on what stratification is selected within the sidebar. 
+            # The "if" conditions are presented for selection within the sidebar, which is further 
+            # explained above in the UI.
+            # Within the conditional, I use stargzer, which allows for the creation of well-formatted
+            # regression tables, including frame division. Into this, I simply apply a linear
+            # model to the defined variables above and rename the labels to match the format of the graph.
+            # I analyze the relationship between each of the components and the song's peak position to 
+            # generate this data.
           
             if (input$analysis == "energy"){
               HTML(stargazer(lm(data = lm_data,
@@ -1025,5 +1215,7 @@ server <- function(input, output) {
           })
           
 }
+
+# Finally, I run the shiny app with both the UI and the server defined.
   
 shinyApp(ui, server)
