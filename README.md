@@ -13,4 +13,4 @@ The following data was scraped from the Billboard Hot 100 website by Michael Tau
 After statistically analyzing the various factors of a song, I give suggestions on how to maximize chances of a top hit. My reccomendations include: a r&b, rap, or pop song; a song with a short title (only 12-13 characters in length), a song that ranges 3:30-4:00 minutes in length; a song with a high level of "danceability", a measurement of how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity.
 
 
-The following project was created by Jordan Topoleski as a Harvard University Gov 1005: Data final project.
+The following project was created by Jordan Topoleski as a Harvard University Gov 1005 (https://www.davidkane.info/files/gov_1005_fall_2018.pdf) final project, under the guidance of Preceptor David Kane.
