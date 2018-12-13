@@ -1,3 +1,4 @@
+# Load all neccessary packages
 
 library(gganimate)
 library(dplyr)
@@ -11,10 +12,21 @@ library(RCurl)
 library(XML)
 library(tidyverse)
 
+# Read in the CSV data file and save it as a RDS
+# This allows for easy incorperation into my shiny app
+
 songs <- read_csv("songs.csv")
 saveRDS(songs, file = "data.rds")
 
-## Number of Songs on the Top Charts per Year
+# NOTE:
+  # The following work is an active "brainstorm site".
+  # All work here is simply me testing out ideas and examining
+  # the appeal of different graphs. While some of the concepts
+  # were incorperated into my shiny web app, you should look
+  # to the app for all complete and clean work.
+
+
+# Number of Songs on the Top Charts per Year
 
 num <- songs %>%
   count(year)
@@ -84,6 +96,7 @@ ggplot(top_1_new, aes(x = broad_genre)) +
 # Song Title Length Analysis
 # In shiny, make this so user can pick ALL songs, #1 songs or non-#1 songs
 # Also, make this hoverable for the data points
+
 title_length <- songs %>%
   group_by(year) %>%
   mutate(tlength = nchar(title))
