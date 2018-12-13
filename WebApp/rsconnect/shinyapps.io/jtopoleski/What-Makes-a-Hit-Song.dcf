@@ -5,8 +5,8 @@ account: jtopoleski
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 604076
-bundleId: 1740969
+bundleId: 1761565
 url: https://jtopoleski.shinyapps.io/What-Makes-a-Hit-Song/
-when: 1543970990.47803
+when: 1544728136.24687
 asMultiple: FALSE
 asStatic: FALSE
