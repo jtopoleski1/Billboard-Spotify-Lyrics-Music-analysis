@@ -18,13 +18,16 @@ library(tidyverse)
 songs <- read_csv("songs.csv")
 saveRDS(songs, file = "data.rds")
 
-# NOTE:
+--
+  
+  # NOTE:
   # The following work is an active "brainstorm site".
   # All work here is simply me testing out ideas and examining
-  # the appeal of different graphs. While some of the concepts
+  # the appeal of different graphics. While some of the concepts
   # were incorperated into my shiny web app, you should look
-  # to the app for all complete and clean work.
-
+  # to the app for all complete and clean work. THIS WORK IS 
+  # INCOMPLETE AND SIMPLY A RAW WORK SPACE. It is NOT to be 
+  # graded or reproduced!
 
 # Number of Songs on the Top Charts per Year
 
